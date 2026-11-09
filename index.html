@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>人才分析工作台</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-3GE1wCGqsGgKp0p3gTxBCRCQfu+wAJ7LKeV3JULm/Io=' 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-9N8L8EHDfC3w6trYHLkoLs5anXrJHoVxHDHJp+Ff0LQ=' 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <script src="vendor/echarts.min.js"></script>
 <style>
   :root{
@@ -43,7 +43,7 @@
   .upload-box .hint{font-size:11px;color:var(--muted);margin-top:4px;}
   .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;}
   /* 模块选择 */
-  .module-group+.module-group{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
+  .module-group+.module-group,.module-summary{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
   .module-group h3{font-size:14px;font-weight:600;margin-bottom:10px;}
   .module-group .count{margin-left:8px;font-size:11px;font-weight:500;color:#53535b;background:#f2f2f7;padding:2px 7px;border-radius:10px;}
   .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
@@ -251,12 +251,11 @@ const MODULES=[
 
 /* 渲染模块列表 */
 const MODULE_GROUPS=[
-  {title:'招聘与渠道', ids:['funnel','cost','retention','quadrant']},
-  {title:'离职与留存', ids:['turnover','dept_turnover','tenure','cohort']},
-  {title:'部门人效与成本', ids:['eff','eff_trend','cost_ratio','scale']},
-  {title:'人才梯队与继任', ids:['level','key_pos','age','nine_grid']},
-  {title:'薪酬与激励', ids:['salary_perf','roi','salary_pct']},
-  {title:'管理建议', ids:['summary']}
+  {title:'人才流失诊断', ids:['turnover','dept_turnover','tenure','cohort']},
+  {title:'招聘渠道效能', ids:['funnel','cost','retention','quadrant']},
+  {title:'人效分析', ids:['eff','eff_trend','cost_ratio','scale']},
+  {title:'人才梯队健康', ids:['level','key_pos','age','nine_grid']},
+  {title:'薪酬激励归因', ids:['salary_perf','roi','salary_pct']}
 ];
 const moduleGrid=document.getElementById('moduleGrid');
 const moduleState={};
@@ -289,6 +288,10 @@ MODULE_GROUPS.forEach(({title,ids})=>{
   section.append(heading,grid);
   moduleGrid.append(section);
 });
+const summaryGrid=document.createElement('div');
+summaryGrid.className='module-grid module-summary';
+summaryGrid.append(renderModule(modulesById.get('summary')));
+moduleGrid.append(summaryGrid);
 
 /* ==================== 状态判断 ==================== */
 function loadedCount(){
