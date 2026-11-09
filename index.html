@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>人才分析工作台</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-vW+U2aTJ8Xhr8eV1qwtBwNzcKHRR+WYeG/2sk1WMz9I=' 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-3GE1wCGqsGgKp0p3gTxBCRCQfu+wAJ7LKeV3JULm/Io=' 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <script src="vendor/echarts.min.js"></script>
 <style>
   :root{
@@ -43,6 +43,9 @@
   .upload-box .hint{font-size:11px;color:var(--muted);margin-top:4px;}
   .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;}
   /* 模块选择 */
+  .module-group+.module-group{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
+  .module-group h3{font-size:14px;font-weight:600;margin-bottom:10px;}
+  .module-group .count{margin-left:8px;font-size:11px;font-weight:500;color:#53535b;background:#f2f2f7;padding:2px 7px;border-radius:10px;}
   .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
   .module{
     border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;
@@ -146,8 +149,8 @@
     <!-- 模块 -->
     <div class="card">
       <h2>第二步 · 选择分析模块</h2>
-      <p class="desc">勾选想看的维度，按需生成对应板块。模块名后的标注是所需的数据源。</p>
-      <div class="module-grid" id="moduleGrid"></div>
+      <p class="desc">按业务问题选择板块，支持跨组勾选。每个板块下方标注了所需的数据。</p>
+      <div id="moduleGrid"></div>
       <div class="toolbar">
         <button class="btn primary" id="btnRun" disabled>生成分析看板</button>
         <button class="btn ghost" id="btnClear">清空重来</button>
@@ -247,9 +250,18 @@ const MODULES=[
 ];
 
 /* 渲染模块列表 */
+const MODULE_GROUPS=[
+  {title:'招聘与渠道', ids:['funnel','cost','retention','quadrant']},
+  {title:'离职与留存', ids:['turnover','dept_turnover','tenure','cohort']},
+  {title:'部门人效与成本', ids:['eff','eff_trend','cost_ratio','scale']},
+  {title:'人才梯队与继任', ids:['level','key_pos','age','nine_grid']},
+  {title:'薪酬与激励', ids:['salary_perf','roi','salary_pct']},
+  {title:'管理建议', ids:['summary']}
+];
 const moduleGrid=document.getElementById('moduleGrid');
 const moduleState={};
-MODULES.forEach(m=>{
+const modulesById=new Map(MODULES.map(module=>[module.id,module]));
+function renderModule(m){
   moduleState[m.id]=false;
   const div=document.createElement('div');
   div.className='module';
@@ -260,7 +272,22 @@ MODULES.forEach(m=>{
     div.classList.toggle('on',moduleState[m.id]);
     updateRunState();
   });
-  moduleGrid.appendChild(div);
+  return div;
+}
+MODULE_GROUPS.forEach(({title,ids})=>{
+  const section=document.createElement('section');
+  section.className='module-group';
+  const heading=document.createElement('h3');
+  heading.textContent=title;
+  const count=document.createElement('span');
+  count.className='count';
+  count.textContent=ids.length+' 项';
+  heading.append(count);
+  const grid=document.createElement('div');
+  grid.className='module-grid';
+  grid.append(...ids.map(id=>renderModule(modulesById.get(id))));
+  section.append(heading,grid);
+  moduleGrid.append(section);
 });
 
 /* ==================== 状态判断 ==================== */
